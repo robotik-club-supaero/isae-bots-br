@@ -19,8 +19,8 @@
 
 // Initialise les différents objets :
 Ultrason ultrason = Ultrason(ULTRASON_ECHO, ULTRASON_TRIGGER);
-Moteur moteur_d = Moteur(EN_R, IN1_R, IN2_R);
-Moteur moteur_g = Moteur(EN_L, IN1_L, IN2_L);
+Moteur moteur_d = Moteur(EN_R, IN1_R, IN2_R); // à brancher en M2
+Moteur moteur_g = Moteur(EN_L, IN1_L, IN2_L); //moteur à brancher en M1
 Encodeur encoder_R = Encodeur(CLK_R, DT_R);
 Encodeur encoder_L = Encodeur(CLK_L, DT_L);
 Mesure_pos mesure_pos = Mesure_pos(&encoder_R, &encoder_L);
@@ -34,21 +34,29 @@ long m_time_log = 0; // Variable de temps ou on stocke le temps actuel
 void setup()
 {
 
+  Serial.begin(115200); // Initialisation de la communication série
+
   ultrason.setup();
   Serial.println("Ultrason setup");
 
-  mesure_pos.setup();
-  Serial.println("Mesure de Position setup");
-
-  Serial.begin(115200); // Initialisation de la communication série
+  // mesure_pos.setup();
+  // Serial.println("Mesure de Position setup");
 
   moteur_g.setup(); // Initialisation des moteurs
   moteur_d.setup();
   Serial.println("moteur setup");
 
-  // Serial.println("Test Moteurs");
-  // moteur_g.set_speed(-200); // TODO : regler la vitesse pour tester la vitesse max
-  // moteur_d.set_speed(-200);
+  Serial.println("Test Moteurs");
+  moteur_g.set_speed(200); // TODO : regler la vitesse pour tester la vitesse max
+  moteur_d.set_speed(200);
+  delay(2000);
+  moteur_g.set_speed(0);
+  moteur_d.set_speed(0);
+  
+  delay(1000);
+  encoder_R.setup();
+  encoder_L.setup();
+
 
   asserv.setup();
   Serial.println("asserv setup");
@@ -67,9 +75,11 @@ void loop()
 
   ultrason.loop();
   mesure_pos.loop();
-  machine_etats.loop();
+  // machine_etats.loop();
 
-  if (m_time_log + 500 < millis()) // Log toutes les secondes
+
+  // if (millis() - m_time_log > 1000) // Log toutes les secondes vraiment ?
+  if (m_time_log + 500 < millis()) // Log toutes les 1/2 secondes
   {
     Serial.print("Distance: ");
     Serial.println(ultrason.m_distance);
@@ -87,6 +97,10 @@ void loop()
     Serial.print(ultrason.m_distance);
     Serial.print(" Etat :");
     Serial.println(machine_etats.etat);
+    Serial.println("Encodeur Gauche");
+    encoder_L.loop();
+    Serial.println("Encodeur Droit");
+    encoder_R.loop();
     m_time_log = millis();
   }
 }

@@ -67,9 +67,9 @@ void Machine_etats::loop()
                 }
                 else {
                     Serial.print("Temps écoulé : ");
-                    Serial.print(millis() - m_time_global);
+                    Serial.println(millis() - m_time_global);
                     Serial.print("Temps avant départ : ");
-                    Serial.print(millis() - m_time_global - START_TIME);
+                    Serial.println(millis() - m_time_global - START_TIME);
                     etat = INIT; // On ne change rien
                 }
             }
