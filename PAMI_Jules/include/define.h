@@ -57,8 +57,8 @@ MACHINE A ETAT
 #define PIN_TIRETTE 4 // PIN de la tirette pour lancer le match
 
 #define GLOBALTIME 99000 // Temps global de la pami en ms (99s)
-#define START_TIME 85000 // Les pamis commencent dans les 15 dernières minutes.
-#define SPEED 40         // Vitesse en cm/s (25 ou 255 ? est la vitesse max des moteurs)
+#define START_TIME 10000 // Les pamis commencent dans les 15 dernières minutes.
+#define SPEED 10         // Vitesse en cm/s (25 ou 255 ? est la vitesse max des moteurs)
 #define DISTANCE_MIN 15 // Distance minimale pour éviter un obstacle en cm
 #define EPSP 1          // Incertitude position, cm
 #define EPSA 0.1        // 0,1 ? //Incertitude position, radian

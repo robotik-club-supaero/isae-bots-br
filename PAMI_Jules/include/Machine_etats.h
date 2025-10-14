@@ -12,7 +12,7 @@
 #include "define.h"
 
 #define K 1
-#define dt 10
+#define dt 500
 
 #define time_sensor 8000
 
