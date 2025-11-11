@@ -21,13 +21,21 @@ const int size_mean = 100;
 bool blue_detected=false;
 bool yellow_detected=false;
 
-float facteur_bleu_red = 3.5;
-float facteur_bleu_green = 1.5;
+float truth_factor_red_blue =0.0;
+float truth_factor_green_blue =0.0;
+float truth_factor_blue_blue =0.0;
 
-float facteur_jaune_green=3;
-float facteur_jaune_red=3;
+float truth_factor_blue =0.0;
 
-float seuil_bleu_faible =0.2;
+float truth_factor_blue_ecart_relatif =0.0;
+
+float truth_factor_red_yellow =0.0;
+float truth_factor_green_yellow =0.0;
+float truth_factor_blue_yellow =0.0;
+
+float truth_factor_yellow =0.0;
+
+float truth_factor_yellow_ecart_relatif =0.0;
 
 
 
@@ -40,6 +48,27 @@ float tab_green[size_mean];
 float blue_mean_frequency = 0;
 float red_mean_frequency = 0;
 float green_mean_frequency = 0;
+
+
+
+float blue_mean_frequency_blue = 0;
+float red_mean_frequency_blue = 0;
+float green_mean_frequency_blue = 0;
+
+float blue_mean_frequency_yellow = 0;
+float red_mean_frequency_yellow = 0;
+float green_mean_frequency_yellow = 0;
+
+
+float blue_norm_frequency_blue = 0;
+float red_norm_frequency_blue = 0;
+float green_norm_frequency_blue = 0;
+
+float blue_norm_frequency_yellow = 0;
+float red_norm_frequency_yellow = 0;
+float green_norm_frequency_yellow = 0;
+
+
 
 // Temporary variables for frequency measurement
 float redFrequency = 0;
@@ -88,12 +117,38 @@ void setup() {
   digitalWrite(S1, HIGH);
 
 
-
+  Serial.println("Ne rien placer");
   red_mean_frequency=measureMeanFrequency(LOW,LOW, size_mean);
   green_mean_frequency=measureMeanFrequency(HIGH,HIGH, size_mean);
   blue_mean_frequency=measureMeanFrequency(LOW,HIGH, size_mean);
 
- 
+  Serial.println("Placer bleu");
+  delay(2000);
+  Serial.println("Debut bleu");
+  red_mean_frequency_blue=measureMeanFrequency(LOW,LOW, size_mean);
+  green_mean_frequency_blue=measureMeanFrequency(HIGH,HIGH, size_mean);
+  blue_mean_frequency_blue=measureMeanFrequency(LOW,HIGH, size_mean);
+  Serial.println("fin bleu");
+  delay(2000);
+
+  Serial.println("Placer jaune");
+  delay(2000);
+  Serial.println("Debut jaune");
+  red_mean_frequency_yellow=measureMeanFrequency(LOW,LOW, size_mean);
+  green_mean_frequency_yellow=measureMeanFrequency(HIGH,HIGH, size_mean);
+  blue_mean_frequency_yellow=measureMeanFrequency(LOW,HIGH, size_mean);
+  Serial.println("fin jaune");
+  delay(2000);
+
+  blue_norm_frequency_blue=abs((blue_mean_frequency_blue-blue_mean_frequency)/(green_mean_frequency_blue+red_mean_frequency_blue+blue_mean_frequency_blue));
+  red_norm_frequency_blue=abs((red_mean_frequency_blue-red_mean_frequency)/(green_mean_frequency_blue+red_mean_frequency_blue+blue_mean_frequency_blue));
+  green_norm_frequency_blue=abs((green_mean_frequency_blue-green_mean_frequency)/(green_mean_frequency_blue+red_mean_frequency_blue+blue_mean_frequency_blue));
+
+
+
+  blue_norm_frequency_yellow=abs((blue_mean_frequency_yellow-blue_mean_frequency)/(green_mean_frequency_blue+red_mean_frequency_blue+blue_mean_frequency_blue));
+  red_norm_frequency_yellow=abs((red_mean_frequency_yellow-red_mean_frequency)/(green_mean_frequency_blue+red_mean_frequency_blue+blue_mean_frequency_blue));
+  green_norm_frequency_yellow=abs((green_mean_frequency_yellow-green_mean_frequency)/(green_mean_frequency_blue+red_mean_frequency_blue+blue_mean_frequency_blue));
   
 
   // Calculate mean frequencies
@@ -109,45 +164,108 @@ void loop() {
   blue_detected=false;
   yellow_detected=false;
 
+
+  truth_factor_red_blue =0.0;
+  truth_factor_green_blue =0.0;
+  truth_factor_blue_blue =0.0;
+
+  truth_factor_red_yellow =0.0;
+  truth_factor_green_yellow =0.0;
+  truth_factor_blue_yellow =0.0;
+
+  truth_factor_yellow =0.0;
+  truth_factor_blue =0.0;
+
+  truth_factor_blue_ecart_relatif =0.0;
+  truth_factor_yellow_ecart_relatif =0.0;
+
   
-  Serial.println("Begin mesure");
+
   redFrequency=measureMeanFrequency(LOW,LOW, 10);
   greenFrequency=measureMeanFrequency(HIGH,HIGH, 10);
   blueFrequency=measureMeanFrequency(LOW,HIGH, 10);
  
   delay(100);
 
-  blue_norm_frequency=abs((blueFrequency-red_mean_frequency)/(redFrequency+greenFrequency+blueFrequency));
-  red_norm_frequency=abs((redFrequency-blue_mean_frequency)/(redFrequency+greenFrequency+blueFrequency));
+  blue_norm_frequency=abs((blueFrequency-blue_mean_frequency)/(redFrequency+greenFrequency+blueFrequency));
+  red_norm_frequency=abs((redFrequency-red_mean_frequency)/(redFrequency+greenFrequency+blueFrequency));
   green_norm_frequency=abs((greenFrequency-green_mean_frequency)/(redFrequency+greenFrequency+blueFrequency));
 
 
 
- Serial.print("Blue Frequency: "); Serial.println(blue_norm_frequency);
- Serial.print("Red Frequency: "); Serial.println(red_norm_frequency);
- Serial.print("Green Frequency: "); Serial.println(green_norm_frequency);
+ //Serial.print("Blue Frequency: "); Serial.println(blue_norm_frequency);
+ //Serial.print("Red Frequency: "); Serial.println(red_norm_frequency);
+ //Serial.print("Green Frequency: "); Serial.println(green_norm_frequency);
 
  Serial.println("");
 
-blue_detected = (blue_norm_frequency > facteur_bleu_red * red_norm_frequency) && (blue_norm_frequency > facteur_bleu_green * green_norm_frequency);
+  truth_factor_blue_blue =blue_norm_frequency/blue_norm_frequency_blue;
+  truth_factor_green_blue =green_norm_frequency/green_norm_frequency_blue;
+  truth_factor_red_blue =red_norm_frequency/red_norm_frequency_blue;
 
-yellow_detected = (red_norm_frequency > facteur_jaune_red * blue_norm_frequency) && (green_norm_frequency > facteur_jaune_green * blue_norm_frequency) && (blue_norm_frequency < seuil_bleu_faible);
+  truth_factor_blue =truth_factor_blue_blue+truth_factor_green_blue+truth_factor_red_blue;
 
+ 
+ // blue_detected = (truth_factor_blue_blue > 0.5 && truth_factor_blue_blue < 1.5) 
+   //               && (truth_factor_green_blue > 0.5 && truth_factor_green_blue < 1.5)
+     //             &&(truth_factor_red_blue > 0.5 && truth_factor_red_blue < 1.5);
+
+
+
+
+
+
+  truth_factor_blue_yellow =blue_norm_frequency/blue_norm_frequency_yellow;
+  truth_factor_green_yellow =green_norm_frequency/green_norm_frequency_yellow;
+  truth_factor_red_yellow =red_norm_frequency/red_norm_frequency_yellow;
+
+  truth_factor_yellow =truth_factor_blue_yellow+truth_factor_green_yellow+truth_factor_red_yellow;
+
+
+  //yellow_detected = (truth_factor_blue_yellow > 0.5 && truth_factor_blue_yellow < 1.5) 
+    //              && (truth_factor_red_yellow > 0.5 && truth_factor_red_yellow < 1.5)
+      //            &&(truth_factor_green_yellow > 0.5 && truth_factor_green_yellow < 1.5);
+
+
+  
+  
+  
+  truth_factor_blue_ecart_relatif =(abs(truth_factor_blue/3 -1) )*100;   // indique l'écart relatif en % par rappoirt a la mesure attendue pour avoir du blueu
+  truth_factor_yellow_ecart_relatif =(abs(truth_factor_yellow/3 -1))*100; // indique l'écart relatif en % par rappoirt a la mesure attendue pour avoir du jaune
+
+  blue_detected = truth_factor_blue_ecart_relatif <5 && truth_factor_yellow_ecart_relatif>30;
+  yellow_detected=truth_factor_yellow_ecart_relatif<12 &&truth_factor_blue_ecart_relatif>100;
 
 
  if (blue_detected && !yellow_detected){
 
     Serial.println("blue detected");
+    Serial.println("ble tf");
+    Serial.println(truth_factor_blue_ecart_relatif);
+    Serial.println("");
+    Serial.println("yellow tf");
+    Serial.println(truth_factor_yellow_ecart_relatif);
  };
 
  if (!blue_detected && yellow_detected){
 
     Serial.println("yellow detected");
+    Serial.println("yellow tf");
+    Serial.println(truth_factor_yellow_ecart_relatif);
+    Serial.println("");
+    Serial.println("ble tf");
+    Serial.println(truth_factor_blue_ecart_relatif);
+    
  };
 
  if (!blue_detected && !yellow_detected){
 
     Serial.println("nothing detected");
+    Serial.println("yellow tf");
+    Serial.println(truth_factor_yellow_ecart_relatif);
+    Serial.println("");
+    Serial.println("ble tf");
+    Serial.println(truth_factor_blue_ecart_relatif);
  };
 
 
