@@ -233,8 +233,8 @@ void loop() {
   truth_factor_blue_ecart_relatif =(abs(truth_factor_blue/3 -1) )*100;   // indique l'écart relatif en % par rappoirt a la mesure attendue pour avoir du blueu
   truth_factor_yellow_ecart_relatif =(abs(truth_factor_yellow/3 -1))*100; // indique l'écart relatif en % par rappoirt a la mesure attendue pour avoir du jaune
 
-  blue_detected = truth_factor_blue_ecart_relatif <5 && truth_factor_yellow_ecart_relatif>30;
-  yellow_detected=truth_factor_yellow_ecart_relatif<12 &&truth_factor_blue_ecart_relatif>100;
+  blue_detected = truth_factor_blue_ecart_relatif <15 && truth_factor_yellow_ecart_relatif>30;
+  yellow_detected=truth_factor_yellow_ecart_relatif<15 &&truth_factor_blue_ecart_relatif>100;
 
 
  if (blue_detected && !yellow_detected){
