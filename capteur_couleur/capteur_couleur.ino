@@ -17,12 +17,18 @@ long int blueMin = 40000;
 long int blueMax = 70000;
 
 const int size_mean = 100;
-const int facteur = 2;
-const int facteur_red = 2;
 
-bool red_detected;
-bool green_detected;
-bool blue_detected;
+bool blue_detected=false;
+bool yellow_detected=false;
+
+float facteur_bleu_red = 3.5;
+float facteur_bleu_green = 1.5;
+
+float facteur_jaune_green=3;
+float facteur_jaune_red=3;
+
+float seuil_bleu_faible =0.2;
+
 
 
 // Arrays to store measured frequencies
@@ -46,6 +52,7 @@ float blueEdgeTime = 0;
 float red_norm_frequency = 0;
 float green_norm_frequency = 0;
 float blue_norm_frequency = 0;
+
 
 float measureMeanFrequency(int S2_state, int S3_state, int numValues) {
   float sum = 0.0;
@@ -99,9 +106,9 @@ void setup() {
 
 void loop() {
 
-  red_detected=false;
-  green_detected=false;
   blue_detected=false;
+  yellow_detected=false;
+
   
   Serial.println("Begin mesure");
   redFrequency=measureMeanFrequency(LOW,LOW, 10);
@@ -110,9 +117,9 @@ void loop() {
  
   delay(100);
 
-  blue_norm_frequency=(blueFrequency-red_mean_frequency)/(redFrequency+greenFrequency+blueFrequency);
-  red_norm_frequency=(redFrequency-blue_mean_frequency)/(redFrequency+greenFrequency+blueFrequency);
-  green_norm_frequency=(greenFrequency-green_mean_frequency)/(redFrequency+greenFrequency+blueFrequency);
+  blue_norm_frequency=abs((blueFrequency-red_mean_frequency)/(redFrequency+greenFrequency+blueFrequency));
+  red_norm_frequency=abs((redFrequency-blue_mean_frequency)/(redFrequency+greenFrequency+blueFrequency));
+  green_norm_frequency=abs((greenFrequency-green_mean_frequency)/(redFrequency+greenFrequency+blueFrequency));
 
 
 
@@ -122,26 +129,25 @@ void loop() {
 
  Serial.println("");
 
- blue_detected= blue_norm_frequency>facteur*abs(red_norm_frequency) && blue_norm_frequency>abs(facteur*green_norm_frequency);
+blue_detected = (blue_norm_frequency > facteur_bleu_red * red_norm_frequency) && (blue_norm_frequency > facteur_bleu_green * green_norm_frequency);
 
- red_detected=red_norm_frequency>facteur_red*abs(blue_norm_frequency) && red_norm_frequency>abs(facteur_red*green_norm_frequency);
-
- green_detected=green_norm_frequency>facteur*abs(blue_norm_frequency) && green_norm_frequency>facteur*abs(red_norm_frequency);
+yellow_detected = (red_norm_frequency > facteur_jaune_red * blue_norm_frequency) && (green_norm_frequency > facteur_jaune_green * blue_norm_frequency) && (blue_norm_frequency < seuil_bleu_faible);
 
 
- if (blue_detected && !red_detected && ! green_detected){
+
+ if (blue_detected && !yellow_detected){
 
     Serial.println("blue detected");
  };
 
- if (!blue_detected && red_detected && ! green_detected){
+ if (!blue_detected && yellow_detected){
 
-    Serial.println("red detected");
+    Serial.println("yellow detected");
  };
 
- if (!blue_detected && !red_detected &&  green_detected){
+ if (!blue_detected && !yellow_detected){
 
-    Serial.println("green detected");
+    Serial.println("nothing detected");
  };
 
 
