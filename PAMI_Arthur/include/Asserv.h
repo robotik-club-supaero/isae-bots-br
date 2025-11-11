@@ -16,8 +16,8 @@ class Asserv
 {
 private:
     // Facteurs pour passer d'une vitesse en cm/s à une vitesse entre 0 et 255
-    float Kmot_r = 20;
-    float Kmot_l = 20;
+    float Kmot_r = 2;
+    float Kmot_l = 2;
     float Kmot_angle = 50;
     long dt = 10;
     long m_time; // Variable de temps ou on stocke le temps actuel

@@ -33,9 +33,9 @@ void Moteur::set_speed(int vitesse)
         digitalWrite(m_IN2, 1);
         m_vitesse = vitesse; // Setup la vitesse en valeur absolue
     }
-    if (m_vitesse > 255)
+    if (m_vitesse > 255 / 2)
     {
-        m_vitesse = 255; // contraint la vitesse en valeur absolue
+        m_vitesse = 255 / 2; // contraint la vitesse en valeur absolue
     }
     analogWrite(m_EN, m_vitesse); // envoie la command de vitesse
 }

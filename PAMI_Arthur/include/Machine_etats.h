@@ -3,6 +3,7 @@
 #define MACHINE_ETATS_H
 
 #include <Arduino.h>
+#include <vector>
 #include <Mesure_pos.h>
 #include <Moteur.h>
 #include <Irsensor.h>
@@ -16,7 +17,14 @@
 
 #define time_sensor 8000
 
+struct Point {
+    float x;
+    float y;
+    Point(float x, float y) : x(x), y(y) {}
+};
 
+double distance(const Point& a, const Point& b);
+bool isAtTarget(const Point& currentPos, const Point& target, double threshold = 1.);
 
 class Machine_etats
 {
@@ -50,6 +58,16 @@ public:
     float angle = 0;
     int m_minimum_distance = 1000; 
 
+    int checkpoints_loop = 1 ;
+    int targetIndex = 0 ;
+    std::vector<Point> checkpoints = {
+        {20.0, 0.0},  // p1
+        {20.0, 20.0},  // p1
+        {0.0, 20.0},  // p1
+        {0.0, 0.0}   // p4
+    };
+    Point target = checkpoints[0] ;
+    
     Asserv *m_p_asserv;
     Serv *m_p_servo ;
 

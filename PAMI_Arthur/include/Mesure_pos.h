@@ -7,6 +7,9 @@
 #define MESURE_POS_H
 #include <Arduino.h>
 #include <Encodeur.h>
+
+float angle_diff(float angle_1, float angle_2);
+
 class Mesure_pos
 {
 
@@ -17,8 +20,8 @@ private:
      * Facteurs proportionnels entre encodeur et roue ( a determiner empiriquement )
      * Permet de passer de la mesure de l'encodeur à la distance parcourue par la roue et à l'angle de rotation
      */
-    float K_angle = 0.15; // TODO : regler les facteurs si on change la meca
-    float K_r = 0.0109;   // TODO : regler les facteurs si on change la meca
+    float K_angle = 0.132; // TODO : regler les facteurs si on change la meca
+    float K_r = 0.011;   // TODO : regler les facteurs si on change la meca
     float K_l = 0.011;   // TODO : regler les facteurs si on change la meca
     /**s
      * temps entre deux mesures

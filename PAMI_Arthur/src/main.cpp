@@ -54,6 +54,7 @@ void setup()
   Serial.println("asserv setup");
 
   machine_etats.setup();
+  
   Serial.println("machine etats setup");
 
   m_time_log = millis();
@@ -67,12 +68,15 @@ void loop()
 
   ultrason.loop();
   mesure_pos.loop();
-  machine_etats.loop();
 
-  if (m_time_log + 500 < millis()) // Log toutes les secondes
+  if (DEBUG_ENCODER){
+    ;
+  } else {
+    machine_etats.loop();
+  }
+
+  if (m_time_log + 1000 < millis()) // Log toutes les secondes
   {
-    Serial.print("Distance: ");
-    Serial.println(ultrason.m_distance);
     Serial.print("Vitesse L :");
     Serial.print(mesure_pos.vitesse_l);
     Serial.print(" Vitesse R :");

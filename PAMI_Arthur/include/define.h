@@ -8,6 +8,8 @@
 #ifndef DEFINE_H
 #define DEFINE_H
 
+#define DEBUG_ENCODER 0
+
 /*
 ENCODEURS
 */
@@ -18,7 +20,7 @@ ENCODEURS
 #define DT_L 13  // DT RIGHT Encoder
 
 #define INV_L 0 // Inversion du sens de rotation de l'encodeur gauche
-#define INV_R 1 // Inversion du sens de rotation de l'encodeur droit
+#define INV_R 0 // Inversion du sens de rotation de l'encodeur droit
 
 /*
 MOTEURS
@@ -57,7 +59,7 @@ MACHINE A ETAT
 #define PIN_TIRETTE 4 // PIN de la tirette pour lancer le match
 
 #define GLOBALTIME 99000 // Temps global de la pami en ms (99s)
-#define START_TIME 85000 // Les pamis commencent dans les 15 dernières minutes.
+#define START_TIME 5000 // Les pamis commencent dans les X dernières secondes.
 #define SPEED 40         // Vitesse en cm/s (25 ou 255 ? est la vitesse max des moteurs)
 #define DISTANCE_MIN 15 // Distance minimale pour éviter un obstacle en cm
 #define INCERTITUDE_POS 1          // Incertitude position, cm

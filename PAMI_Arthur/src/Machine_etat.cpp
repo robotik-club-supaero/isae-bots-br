@@ -4,11 +4,21 @@
 
 #include <define.h>
 
+
+double distance(const Point& a, const Point& b) {
+    return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
+}
+
+bool isAtTarget(const Point& currentPos, const Point& target, double threshold) {
+    return distance(currentPos, target) < threshold;
+}
+
 Machine_etats::Machine_etats(Asserv *p_asserv, Mesure_pos *p_mesure_pos, Ultrason *p_ultrason)
 {
     m_p_asserv = p_asserv;
     m_p_mesure_pos = p_mesure_pos;
     m_p_ultrason = p_ultrason;
+
 }
 
 void Machine_etats::setup()
@@ -18,10 +28,13 @@ void Machine_etats::setup()
     etat = INIT; // Etat initial de la PAMI
     m_time = millis();
     m_time_global = millis();
+    
+    // DEMO
+    targetIndex = 0 ;
+
 }
 
-void Machine_etats::loop()
-{
+void Machine_etats::loop(){
 
     if (millis() - m_time >= dt) // Tout les dt
     {
@@ -34,7 +47,7 @@ void Machine_etats::loop()
         switch (etat) // MACHINE A ETATS
         { 
         case INIT: // Etat initial, en attente du début du match
-                Serial.print("ETAT : INIT");
+            //Serial.println("ETAT : INIT");
 
             // Lire l'état de la tirette si elle y est encore
             if (tirette == 1){ // tant que la tirette est là
@@ -68,15 +81,15 @@ void Machine_etats::loop()
                 }
                 else {
                     Serial.print("Temps écoulé : ");
-                    Serial.print(millis() - m_time_global);
+                    Serial.println(millis() - m_time_global);
                     Serial.print("Temps avant départ : ");
-                    Serial.print(millis() - m_time_global - START_TIME);
+                    Serial.println(millis() - m_time_global - START_TIME);
                     etat = INIT; // On ne change rien
                 }
             }
             break;
         case MOVE:
-            Serial.print("ETAT : MOVE");
+            //Serial.println("ETAT : MOVE");
 
             if (millis() - m_time_global >= GLOBALTIME) { // Si le match est terminé (T >= 100s)
                 m_p_asserv->asserv_global(0, 0, angle); // Arrêt
@@ -92,32 +105,53 @@ void Machine_etats::loop()
                 {
                     pos_x = m_p_mesure_pos->position_x + pos_init_x;
                     pos_y = m_p_mesure_pos->position_y + pos_init_y;
-                    
+
                     // -- MISE A JOUR DE L'OBJECTIF DEPLACEMENT -- //
                     // Code ICI : pos_target_x = ? & pos_target_y = ?
                     // ------------------------------------------- //
+
+                    Point position{pos_x, pos_y};
                     
-                    distance_target = sqrt(pow(pos_x - pos_target_x, 2) + pow(pos_y - pos_target_y, 2)) ;
-                    if (distance_target > INCERTITUDE_POS){
-                        angle = atan2(pos_target_y - pos_y, pos_target_x - pos_x);
-                        m_p_asserv->asserv_global(SPEED, SPEED, angle); // se dirige en direction de l'angle.
+                    // If checkpoint reached -> next checkpoint
+                    if (isAtTarget(position, checkpoints[targetIndex])) {
+                        Serial.println("Next Target !");
+                        targetIndex++;
+                        if (targetIndex == checkpoints.size()) {
+                            if (checkpoints_loop == 1){
+                                targetIndex = 0 ;
+                            } else {
+                                etat = END ;
+                                return ;
+                            }
+                        }
+                    }
+                    
+                    // Go to checkpoint
+                    target = checkpoints[targetIndex] ;
+                    angle = fmod(atan2(target.y - pos_y, target.x - pos_x), 2 * PI);
+                    
+                    int speed = SPEED ;
+                    if (std::abs(angle_diff(angle, m_p_mesure_pos->position_theta)) > PI){
+                        speed = -1 * speed ;
+                    }
+                    
+                    if (std::abs(angle_diff(angle, m_p_mesure_pos->position_theta)) < 0.2){
+                        m_p_asserv->asserv_global(speed, speed, angle); // se dirige en direction de l'angle et avance.
+                    } else {
+                        m_p_asserv->asserv_global(speed/4., speed/4., angle); // se dirige en direction de l'angle.
                     }
 
-                    if (distance_target <= INCERTITUDE_POS) { // Fin si on est sur le target
-                        etat = END;
-                    }
-                    else {
-                        etat = MOVE; // Continue à bouger
-                    }
+                    etat = MOVE ; // Stay in MOVE
+                    return ;
                 }
             }
             break;
 
         case OBSTACLE:
-            Serial.print("ETAT : OBSTACLE (à " + String(m_minimum_distance) + " cm)");
+            //Serial.println("ETAT : OBSTACLE (à " + String(m_minimum_distance) + " cm)");
             
             if (millis() - m_time_global >= GLOBALTIME) {
-                m_p_asserv->asserv_global(0, 0, angle);
+                m_p_asserv->asserv_global(0, 0, m_p_mesure_pos->position_theta);
                 etat = END;
             }
             else {
@@ -131,7 +165,7 @@ void Machine_etats::loop()
             break;
 
         case STOP: 
-            Serial.print("ETAT : STOP");
+            Serial.println("ETAT : STOP");
 
             if (millis() - m_time_global >= GLOBALTIME) {
                 m_p_asserv->asserv_global(0, 0, angle);
@@ -143,7 +177,7 @@ void Machine_etats::loop()
             break;
 
         case END: // Stop tout
-            Serial.print("ETAT : END");
+            Serial.println("ETAT : END");
 
             m_p_asserv->asserv_global(0, 0, m_p_mesure_pos->position_theta);
             break;

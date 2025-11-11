@@ -1,6 +1,10 @@
 #include <Mesure_pos.h>
 #include <define.h>
 
+float angle_diff(float angle_1, float angle_2){
+    return fmod(angle_1 - angle_2 + 3.14, 2 * PI) - PI ;
+}
+
 Mesure_pos::Mesure_pos(Encodeur *p_encodeur_r, Encodeur *p_encodeur_l)
 {
     m_p_encoder_L = p_encodeur_l;
@@ -64,7 +68,7 @@ void Mesure_pos::loop()
         }
 
         // Positions
-        position_theta = position_theta + (displacement_l * K_l - displacement_r * K_r) * K_angle;
+        position_theta = fmod(position_theta + (displacement_l * K_l - displacement_r * K_r) * K_angle, 2 * PI);
         position_x = position_x + ((displacement_l * K_l + displacement_r * K_r) / 2) * cos(position_theta);
         position_y = position_y + ((displacement_l * K_l + displacement_r * K_r) / 2) * sin(position_theta);
         
