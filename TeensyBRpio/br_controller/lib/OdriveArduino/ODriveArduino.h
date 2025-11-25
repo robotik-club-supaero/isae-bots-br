@@ -30,6 +30,8 @@ public:
     bool run_state(int axis, int requested_state, bool wait_for_idle, float timeout = 10.0f);
 
     int getCurrentAxisState(int axis);
+    bool reset_and_restore_odrive_axe(int axis);
+    bool reset_and_restore_odrive_both_axes();
 
 
 private:

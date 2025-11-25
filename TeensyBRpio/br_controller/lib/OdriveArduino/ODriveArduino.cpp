@@ -1,5 +1,6 @@
 
 #include "ODriveArduino.h"
+#include "../../include/logging.hpp"
 
 // Print with stream operator
 template<typename T> inline Print& operator <<(Print &obj,     T arg) { obj.print(arg);    return obj; }
@@ -63,13 +64,17 @@ String ODriveArduino::test() {
 bool ODriveArduino::run_state(int axis, int requested_state, bool wait_for_idle, float timeout) {
     int timeout_ctr = (int)(timeout * 100.0f);
     serial_ << "w axis" << axis << ".requested_state " << requested_state << '\n';
+
+    int32_t current_state = 0 ;
     if (wait_for_idle) {
         do {
             delay(10);
             serial_ << "r axis" << axis << ".current_state\n";
-        } while (readInt() != requested_state && --timeout_ctr > 0);
-    }
+            current_state = readInt();
 
+        } while (current_state != requested_state && --timeout_ctr > 0);
+    }
+    
     return timeout_ctr > 0;
 }
 
@@ -96,4 +101,48 @@ String ODriveArduino::readString() {
         str += c;
     }
     return str;
+}
+
+bool ODriveArduino::reset_and_restore_odrive_axe(int axis) {
+    // 1. Réinitialiser les erreurs
+    serial_ << "w axis" << axis << ".error 0\n";
+    delay(10);
+
+    // 2. Redémarrer l'ODrive (optionnel, si nécessaire)
+    serial_ << "sr\n";
+    delay(2000);
+
+    // 3. Recalibrer l'axe (si nécessaire)
+    serial_ << "w axis" << axis << ".requested_state " << AXIS_STATE_STARTUP_SEQUENCE << '\n';
+    delay(1000);
+
+    // 4. Attendre que l'axe soit en idle
+    int32_t current_state = 0;
+    int cpt = 100 ;
+    do {
+        delay(10);
+        serial_ << "r axis" << axis << ".current_state\n";
+        current_state = readInt();
+        cpt-- ;
+    } while (current_state != AXIS_STATE_IDLE || cpt > 0);
+
+}
+
+bool ODriveArduino::reset_and_restore_odrive_both_axes() {
+    // Réinitialiser et relancer l'axe gauche
+    bool left_success = reset_and_restore_odrive_axe(1);
+    if (!left_success) {
+        log(WARN, "Échec de la relance de l'axe gauche.");
+        return false;
+    }
+
+    // Réinitialiser et relancer l'axe droit
+    bool right_success = reset_and_restore_odrive_axe(0);
+    if (!right_success) {
+        log(WARN, "Échec de la relance de l'axe droit.");
+        return false;
+    }
+
+    log(INFO, "Les deux axes ont été relancés avec succès !");
+    return true;
 }

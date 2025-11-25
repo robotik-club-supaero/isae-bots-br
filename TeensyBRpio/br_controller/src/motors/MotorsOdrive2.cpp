@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <numbers>
 
+#include "logging.hpp"
+
 // defines to avoid wondering if 0 is left or right
 #define BR_RIGHT 0
 #define BR_LEFT 1
@@ -36,8 +38,19 @@ void MotorsOdrive2::sendCommand(int motor_number, number_t velCmd) {
 
 void MotorsOdrive2::switchOn() {
     // NOTE on n'attend pas le retour de l'Odrive
-    m_odrive.run_state(BR_RIGHT, AXIS_STATE_CLOSED_LOOP_CONTROL, false, 0.0);
-    m_odrive.run_state(BR_LEFT, AXIS_STATE_CLOSED_LOOP_CONTROL, false, 0.0);
+    bool check_right =  m_odrive.run_state(BR_RIGHT, AXIS_STATE_CLOSED_LOOP_CONTROL, true, 3.0);
+    bool check_left = m_odrive.run_state(BR_LEFT, AXIS_STATE_CLOSED_LOOP_CONTROL, true, 3.0);
+    if (check_right && check_left){
+        log(WARN, "DEBUG Right switchOn() Success");
+    } else {
+        log(WARN, "DEBUG Right switchOn() Failed -> RESETING Odrive");
+        bool success = m_odrive.reset_and_restore_odrive_both_axes();
+        if (success){
+            log(INFO, "DEBUG ODrive Reset successfully");
+        } else {
+            log(INFO, "DEBUG ODrive Reset FAILED");
+        }
+    }
 }
 
 void MotorsOdrive2::switchOff() {
