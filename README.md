@@ -1,4 +1,6 @@
-# isae-bots-bn-2025
+# isae-bots-br
+
+# isae-bots-bn split entre br, pami et action en différent repo.
 
 ## Branches :
 
