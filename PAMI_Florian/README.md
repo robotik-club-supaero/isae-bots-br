@@ -1,3 +1,4 @@
+
 # 🤖 Code pour les PAMIs - by Jules & Flo & Antoine (2026)
 
 ## 📑 Sommaire

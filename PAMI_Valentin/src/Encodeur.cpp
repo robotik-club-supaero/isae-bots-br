@@ -1,8 +1,8 @@
 #include <Encodeur.h>
 
 Encodeur::Encodeur(int clk , int dt ){
-    m_clk = clk ; 
-    m_dt = dt ; 
+    m_clk = clk ;
+    m_dt = dt ;
 }
 
 void Encodeur::setup(){
